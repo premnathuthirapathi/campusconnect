@@ -49,6 +49,7 @@ const ensureAdmin = (req, res, next) => {
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         const files = await File.find();
+        // Pass user object so EJS can use it
         res.render('files', { user: req.user, files });
     } catch (err) {
         console.error('Error fetching files:', err);
@@ -81,7 +82,8 @@ router.get('/category/:category', ensureAuthenticated, async (req, res) => {
     try {
         const { category } = req.params;
         const files = await File.find({ category });
-        res.render('categoryFiles', { files, category });
+        // Pass user object if needed in categoryFiles.ejs
+        res.render('categoryFiles', { user: req.user, files, category });
     } catch (err) {
         console.error('Error fetching category files:', err);
         res.status(500).send('Internal Server Error');
@@ -94,7 +96,8 @@ router.get('/category/:category', ensureAuthenticated, async (req, res) => {
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
         const files = await File.find();
-        res.render('admin', { files });
+        // IMPORTANT: pass user: req.user so admin.ejs can use user
+        res.render('admin', { user: req.user, files });
     } catch (err) {
         console.error('Error loading admin panel:', err);
         res.status(500).send('Internal Server Error');
@@ -113,11 +116,10 @@ router.get('/view/:id', ensureAuthenticated, async (req, res) => {
         const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
 
         // Example for PDFs: set inline content disposition
-        // Adjust Content-Type for other file types if needed
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'inline; filename="' + fileRecord.filename + '"');
 
-        // Stream the file to the response
+        // Stream the file
         fs.createReadStream(filePath).pipe(res);
 
     } catch (err) {
