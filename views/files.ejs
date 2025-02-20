@@ -1,8 +1,9 @@
+<!-- views/files.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Files</title>
 </head>
 <body>
@@ -10,9 +11,26 @@
     <h2>Uploaded Files</h2>
     <ul>
         <% files.forEach(file => { %>
-            <li><a href="/files/<%= file._id %>"><%= file.name %></a></li>
+            <li>
+                <!-- 
+                    Link to the file's route by ID 
+                    If you want direct download, you can do something like:
+                    /files/<%= file._id %> 
+                -->
+                <a href="/files/<%= file._id %>"><%= file.filename %></a>
+            </li>
         <% }) %>
     </ul>
+
+    <!-- If you want an upload form visible for admins only, 
+         you can conditionally show it if user.role === 'admin': -->
+    <% if (user.role === 'admin') { %>
+        <form action="/files/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" required />
+            <button type="submit">Upload File</button>
+        </form>
+    <% } %>
+
     <a href="/logout">Logout</a>
 </body>
 </html>
