@@ -12,6 +12,9 @@ dotenv.config(); // Load environment variables
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ✅ Load Passport Config Before Using It
+require('./config/passport'); 
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
