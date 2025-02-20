@@ -17,13 +17,12 @@ if (!fs.existsSync(uploadDir)) {
 
 /**
  * (Optional) File Filter to Restrict Allowed Extensions
- * If you want to allow all file types, remove fileFilter.
+ * If you want to allow all file types, remove or comment out fileFilter.
  */
 const fileFilter = (req, file, cb) => {
-    // Allowed extensions: images, PDFs, Word docs, etc.
     const allowedExtensions = /jpg|jpeg|png|gif|pdf|doc|docx/;
     const ext = path.extname(file.originalname).toLowerCase();
-    
+
     if (allowedExtensions.test(ext)) {
         cb(null, true);
     } else {
@@ -42,10 +41,9 @@ const storage = multer.diskStorage({
     }
 });
 
-// If you want to allow *all* file types, omit "fileFilter"
 const upload = multer({ 
     storage,
-    fileFilter // remove or comment out if you want all file types
+    fileFilter // remove or comment out if you want to allow *all* file types
 });
 
 // ✅ Middleware: Ensure User Authentication
@@ -87,16 +85,20 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
             return res.status(400).send('No file uploaded.');
         }
 
-        // Optional: getCategory returns a category based on filename
+        // Capture title and description from the form
+        const { title, description } = req.body;
+        // Optional: derive category from the file's name
         const category = getCategory(req.file.filename);
 
-        // Store the file in MongoDB (you can add title, description, etc.)
+        // Store file in MongoDB
         await File.create({ 
-            filename: req.file.filename, 
-            category 
+            filename: req.file.filename,
+            category,
+            title,
+            description
         });
 
-        // Redirect back to the admin panel
+        // Redirect to the admin panel
         res.redirect('/files/admin');
     } catch (err) {
         console.error('Error uploading file:', err);
