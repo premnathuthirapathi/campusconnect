@@ -1,3 +1,4 @@
+// routes/fileRoutes.js
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -24,15 +25,39 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// ✅ Middleware: Ensure User Authentication
+const ensureAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/login');
+};
+
 // ✅ Middleware: Ensure Admin Authentication
 const ensureAdmin = (req, res, next) => {
     if (req.isAuthenticated() && req.user.role === 'admin') {
         return next();
     }
-    res.redirect('/login'); // 🔥 Redirect non-admin users
+    res.redirect('/login'); 
 };
 
-// ✅ File Upload Route (Admin Only)
+// ------------------------------------------------------
+// GET /files -> Show all files to authenticated users
+// ------------------------------------------------------
+router.get('/', ensureAuthenticated, async (req, res) => {
+    try {
+        const files = await File.find();
+        // Pass the user object and files array to EJS
+        res.render('files', { user: req.user, files });
+    } catch (err) {
+        console.error('Error fetching files:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// ------------------------------------------------------
+// POST /files/upload -> Upload new file (Admin Only)
+// ------------------------------------------------------
 router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
@@ -40,15 +65,17 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
         }
         const category = getCategory(req.file.filename);
         await File.create({ filename: req.file.filename, category });
-        res.redirect('/admin');
+        res.redirect('/files/admin');
     } catch (err) {
         console.error('Error uploading file:', err);
         res.status(500).send('Internal Server Error');
     }
 });
 
-// ✅ Get Files by Category
-router.get('/category/:category', async (req, res) => {
+// ------------------------------------------------------
+// GET /files/category/:category -> Show files by category
+// ------------------------------------------------------
+router.get('/category/:category', ensureAuthenticated, async (req, res) => {
     try {
         const { category } = req.params;
         const files = await File.find({ category });
@@ -59,13 +86,37 @@ router.get('/category/:category', async (req, res) => {
     }
 });
 
-// ✅ Admin Panel (Admin Only)
+// ------------------------------------------------------
+// GET /files/admin -> Admin Panel to manage files
+// ------------------------------------------------------
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
         const files = await File.find();
         res.render('admin', { files });
     } catch (err) {
         console.error('Error loading admin panel:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// ------------------------------------------------------
+// GET /files/:id -> Download/View a file by ID (Optional)
+// ------------------------------------------------------
+router.get('/:id', ensureAuthenticated, async (req, res) => {
+    try {
+        const fileRecord = await File.findById(req.params.id);
+        if (!fileRecord) {
+            return res.status(404).send('File not found.');
+        }
+        // If you want to serve the file directly:
+        const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
+        res.download(filePath, fileRecord.filename, (err) => {
+            if (err) {
+                console.error('Error downloading file:', err);
+            }
+        });
+    } catch (err) {
+        console.error('Error fetching file by ID:', err);
         res.status(500).send('Internal Server Error');
     }
 });
