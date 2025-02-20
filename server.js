@@ -30,7 +30,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({ secret: 'your-secret-key', resave: true, saveUninitialized: true }));
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false, // 🔥 Change from true to false (fixes unnecessary session recreation)
+    saveUninitialized: false, // 🔥 Ensure sessions are not stored unless needed
+    cookie: { maxAge: 1000 * 60 * 60 } // 1 hour session timeout
+}));
+
 
 // Set View Engine & Static Folder
 app.set('view engine', 'ejs');
