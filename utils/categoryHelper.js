@@ -15,4 +15,9 @@ function getCategory(filename) {
     return 'others';
 }
 
-module.exports = { getCategory };
+module.exports.getCategory = (filename) => {
+    if (filename.endsWith('.pdf')) return 'Documents';
+    if (filename.endsWith('.jpg') || filename.endsWith('.png')) return 'Images';
+    return 'Others';
+};
+
