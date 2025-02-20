@@ -3,7 +3,7 @@
 %>
 <%- include('partials/layout', { 
       title: pageTitle, 
-      user: user,
+      user: user, /* pass user to the layout */
       body: `
   <div class="my-4">
     <h2>Admin Panel</h2>
@@ -19,6 +19,7 @@
         </form>
       </div>
     </div>
+
     <h3>Uploaded Files</h3>
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
@@ -42,6 +43,7 @@
         </tbody>
       </table>
     </div>
+
     <a href="/files" class="btn btn-secondary">Back to Dashboard</a>
   </div>
 ` }) %>
