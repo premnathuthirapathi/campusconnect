@@ -1,36 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= category %> Files</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-    <h1><%= category.charAt(0).toUpperCase() + category.slice(1) %> Files</h1>
-    
-    <% if (message) { %>
-        <p><%= message %></p>
-    <% } else { %>
-        <ul>
-            <% files.forEach(file => { %>
-                <li>
-                    <strong>Filename:</strong> <%= file.filename %><br/>
-                    <% if (file.title) { %>
-                        <strong>Title:</strong> <%= file.title %><br/>
-                    <% } %>
-                    <% if (file.description) { %>
-                        <strong>Description:</strong> <%= file.description %><br/>
-                    <% } %>
-                </li>
-            <% }) %>
-        </ul>
-    <% } %>
-
-    <a href="/files">Back to Dashboard</a>
-</body>
-</html>
+<% 
+  const pageTitle = category.charAt(0).toUpperCase() + category.slice(1) + ' Files'; 
+%>
+<%- include('partials/layout', { 
+      title: pageTitle, 
+      user: user,
+      body: `
+  <div class="my-4">
+    <h2>${pageTitle}</h2>
+    ${message ? `<div class="alert alert-info">${message}</div>` : `
+      <div class="list-group">
+        ${files.map(file => `
+          <a href="/files/view/${file._id}" class="list-group-item list-group-item-action">
+            <h5>${file.title || 'Untitled'}</h5>
+            <p>${file.description || 'No description provided.'}</p>
+          </a>
+        `).join('')}
+      </div>
+    `}
+    <a href="/files" class="btn btn-secondary mt-3">Back to Dashboard</a>
+  </div>
+` }) %>
