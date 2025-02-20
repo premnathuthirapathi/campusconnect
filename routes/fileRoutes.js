@@ -49,7 +49,6 @@ const ensureAdmin = (req, res, next) => {
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         const files = await File.find();
-        // Render the 'files' view with user and files data
         res.render('files', { user: req.user, files });
     } catch (err) {
         console.error('Error fetching files:', err);
@@ -65,9 +64,8 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
-        // Retrieve the category from the helper
         const category = getCategory(req.file.filename);
-        // Save file info in the database (optionally add title/description fields)
+        // Optionally add title/description to File.create(...)
         await File.create({ filename: req.file.filename, category });
         res.redirect('/files/admin');
     } catch (err) {
@@ -104,7 +102,32 @@ router.get('/admin', ensureAdmin, async (req, res) => {
 });
 
 // ------------------------------------------------------
-// GET /files/:id -> Download/View a file by ID (Optional)
+// GET /files/view/:id -> Stream the file inline (e.g., PDFs)
+// ------------------------------------------------------
+router.get('/view/:id', ensureAuthenticated, async (req, res) => {
+    try {
+        const fileRecord = await File.findById(req.params.id);
+        if (!fileRecord) {
+            return res.status(404).send('File not found.');
+        }
+        const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
+
+        // Example for PDFs: set inline content disposition
+        // Adjust Content-Type for other file types if needed
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="' + fileRecord.filename + '"');
+
+        // Stream the file to the response
+        fs.createReadStream(filePath).pipe(res);
+
+    } catch (err) {
+        console.error('Error streaming file:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// ------------------------------------------------------
+// GET /files/:id -> Download/View a file by ID (Default Download)
 // ------------------------------------------------------
 router.get('/:id', ensureAuthenticated, async (req, res) => {
     try {
@@ -113,6 +136,7 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
             return res.status(404).send('File not found.');
         }
         const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
+
         // Download the file
         res.download(filePath, fileRecord.filename, (err) => {
             if (err) {
