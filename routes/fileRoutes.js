@@ -15,6 +15,22 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
+/**
+ * (Optional) File Filter to Restrict Allowed Extensions
+ * If you want to allow all file types, remove fileFilter.
+ */
+const fileFilter = (req, file, cb) => {
+    // Allowed extensions: images, PDFs, Word docs, etc.
+    const allowedExtensions = /jpg|jpeg|png|gif|pdf|doc|docx/;
+    const ext = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedExtensions.test(ext)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Unsupported file type!'), false);
+    }
+};
+
 // ✅ Multer File Storage Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -25,7 +41,12 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage });
+
+// If you want to allow *all* file types, omit "fileFilter"
+const upload = multer({ 
+    storage,
+    fileFilter // remove or comment out if you want all file types
+});
 
 // ✅ Middleware: Ensure User Authentication
 const ensureAuthenticated = (req, res, next) => {
@@ -65,9 +86,17 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
+
+        // Optional: getCategory returns a category based on filename
         const category = getCategory(req.file.filename);
-        // Optionally add title/description to File.create(...)
-        await File.create({ filename: req.file.filename, category });
+
+        // Store the file in MongoDB (you can add title, description, etc.)
+        await File.create({ 
+            filename: req.file.filename, 
+            category 
+        });
+
+        // Redirect back to the admin panel
         res.redirect('/files/admin');
     } catch (err) {
         console.error('Error uploading file:', err);
@@ -82,7 +111,6 @@ router.get('/category/:category', ensureAuthenticated, async (req, res) => {
     try {
         const { category } = req.params;
         const files = await File.find({ category });
-        // Pass user object if needed in categoryFiles.ejs
         res.render('categoryFiles', { user: req.user, files, category });
     } catch (err) {
         console.error('Error fetching category files:', err);
@@ -96,7 +124,6 @@ router.get('/category/:category', ensureAuthenticated, async (req, res) => {
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
         const files = await File.find();
-        // IMPORTANT: pass user: req.user so admin.ejs can use user
         res.render('admin', { user: req.user, files });
     } catch (err) {
         console.error('Error loading admin panel:', err);
@@ -105,7 +132,8 @@ router.get('/admin', ensureAdmin, async (req, res) => {
 });
 
 // ------------------------------------------------------
-// GET /files/view/:id -> Stream the file inline (e.g., PDFs)
+// GET /files/view/:id -> Inline Viewing for PDFs & Images
+//    Other file types will be forced to download
 // ------------------------------------------------------
 router.get('/view/:id', ensureAuthenticated, async (req, res) => {
     try {
@@ -113,15 +141,35 @@ router.get('/view/:id', ensureAuthenticated, async (req, res) => {
         if (!fileRecord) {
             return res.status(404).send('File not found.');
         }
-        const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
 
-        // Example for PDFs: set inline content disposition
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="' + fileRecord.filename + '"');
+        const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
+        const ext = path.extname(fileRecord.filename).toLowerCase();
+
+        // Decide how to serve based on extension
+        switch (ext) {
+            case '.pdf':
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `inline; filename="${fileRecord.filename}"`);
+                break;
+            case '.jpg':
+            case '.jpeg':
+                res.setHeader('Content-Type', 'image/jpeg');
+                res.setHeader('Content-Disposition', `inline; filename="${fileRecord.filename}"`);
+                break;
+            case '.png':
+            case '.gif':
+                res.setHeader('Content-Type', `image/${ext.slice(1)}`);
+                res.setHeader('Content-Disposition', `inline; filename="${fileRecord.filename}"`);
+                break;
+            default:
+                // For doc, docx, or unknown, force download
+                res.setHeader('Content-Type', 'application/octet-stream');
+                res.setHeader('Content-Disposition', `attachment; filename="${fileRecord.filename}"`);
+                break;
+        }
 
         // Stream the file
         fs.createReadStream(filePath).pipe(res);
-
     } catch (err) {
         console.error('Error streaming file:', err);
         res.status(500).send('Internal Server Error');
@@ -129,7 +177,7 @@ router.get('/view/:id', ensureAuthenticated, async (req, res) => {
 });
 
 // ------------------------------------------------------
-// GET /files/:id -> Download/View a file by ID (Default Download)
+// GET /files/:id -> Default Download Route for any file
 // ------------------------------------------------------
 router.get('/:id', ensureAuthenticated, async (req, res) => {
     try {
@@ -139,7 +187,7 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
         }
         const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
 
-        // Download the file
+        // Force download the file
         res.download(filePath, fileRecord.filename, (err) => {
             if (err) {
                 console.error('Error downloading file:', err);
