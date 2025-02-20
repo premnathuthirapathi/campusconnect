@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 try {
     require('./config/passport'); 
 } catch (error) {
-    console.error("Passport config file not found. Ensure './config/passport.js' exists.");
+    console.error("❌ Passport config file not found. Ensure './config/passport.js' exists.");
     process.exit(1);
 }
 
@@ -35,9 +35,9 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ✅ Session Configuration (Improved Security)
+// ✅ Session Configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key', // 🔥 Use environment variable
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false, 
     saveUninitialized: false, 
     cookie: { maxAge: 1000 * 60 * 60 } // 1-hour session timeout
@@ -62,6 +62,13 @@ app.get('/', (req, res) => {
 // ✅ Define Routes
 app.use('/', require('./routes/authRoutes'));
 app.use('/files', require('./routes/fileRoutes'));
+
+// ✅ Debugging Route
+app.get('/debug-session', (req, res) => {
+    console.log("Session Data:", req.session);
+    console.log("User Data:", req.user);
+    res.json({ session: req.session, user: req.user });
+});
 
 // ✅ Global Error Handler
 app.use((err, req, res, next) => {
