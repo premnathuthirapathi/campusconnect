@@ -4,13 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= category %> Files</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin-bottom: 10px; }
+    </style>
 </head>
 <body>
-    <h1><%= category %> Files</h1>
-    <ul>
-        <% files.forEach(file => { %>
-            <li><%= file.filename %></li>
-        <% }) %>
-    </ul>
+    <h1><%= category.charAt(0).toUpperCase() + category.slice(1) %> Files</h1>
+    
+    <% if (message) { %>
+        <p><%= message %></p>
+    <% } else { %>
+        <ul>
+            <% files.forEach(file => { %>
+                <li>
+                    <strong>Filename:</strong> <%= file.filename %><br/>
+                    <% if (file.title) { %>
+                        <strong>Title:</strong> <%= file.title %><br/>
+                    <% } %>
+                    <% if (file.description) { %>
+                        <strong>Description:</strong> <%= file.description %><br/>
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <a href="/files">Back to Dashboard</a>
 </body>
 </html>
