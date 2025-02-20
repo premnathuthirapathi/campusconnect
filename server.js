@@ -1,42 +1,57 @@
 // server.js
+
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
 const dotenv = require('dotenv');
+
+// Load environment variables from .env
+dotenv.config();
+
+// Models (if needed in this file, otherwise remove)
 const File = require('./models/File');
 const User = require('./models/User');
-
-dotenv.config(); // Load environment variables
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Load Passport Config Before Using It
+// -------------------------------------------
+// 1. Load Passport Configuration
+// -------------------------------------------
 try {
-    require('./config/passport'); 
+    require('./config/passport');
+    console.log("✅ Passport config loaded successfully.");
 } catch (error) {
     console.error("❌ Passport config file not found. Ensure './config/passport.js' exists.");
     process.exit(1);
 }
 
-// ✅ MongoDB Connection
+// -------------------------------------------
+// 2. Connect to MongoDB
+// -------------------------------------------
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => {
+})
+.then(() => {
     console.log("✅ Connected to MongoDB");
-}).catch(err => {
+})
+.catch(err => {
     console.error("❌ MongoDB Connection Error:", err);
     process.exit(1);
 });
 
-// ✅ Middleware
+// -------------------------------------------
+// 3. Express Middleware
+// -------------------------------------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ✅ Session Configuration
+// -------------------------------------------
+// 4. Session Configuration
+// -------------------------------------------
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -44,43 +59,57 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 } // 1-hour session timeout
 }));
 
-// ✅ Initialize Passport
+// -------------------------------------------
+// 5. Initialize Passport
+// -------------------------------------------
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ Set View Engine & Static Folder
+// -------------------------------------------
+// 6. View Engine & Static Folder
+// -------------------------------------------
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-// OPTIONAL: If you want to serve uploaded files directly by URL, e.g. /uploads/<filename>
+// Optional: Serve uploaded files from /uploads if you want direct file URLs:
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Home Route (Redirect if Not Authenticated)
+// -------------------------------------------
+// 7. Home Route
+// -------------------------------------------
 app.get('/', (req, res) => {
+    // If user is authenticated, redirect to /files
     if (req.isAuthenticated()) {
         return res.redirect('/files');
     }
-    res.redirect('/login'); 
+    // Otherwise, redirect to /login
+    res.redirect('/login');
 });
 
-// ✅ Define Routes
+// -------------------------------------------
+// 8. Define Other Routes
+// -------------------------------------------
 app.use('/', require('./routes/authRoutes'));
 app.use('/files', require('./routes/fileRoutes'));
 
-// ✅ Debugging Route
+// Debug route to inspect session and user
 app.get('/debug-session', (req, res) => {
     console.log("Session Data:", req.session);
     console.log("User Data:", req.user);
     res.json({ session: req.session, user: req.user });
 });
 
-// ✅ Global Error Handler
+// -------------------------------------------
+// 9. Global Error Handler
+// -------------------------------------------
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error("❌ Global Error Handler:", err.stack);
     res.status(500).send("Something went wrong! Try again later.");
 });
 
-// ✅ Start Server
+// -------------------------------------------
+// 10. Start Server
+// -------------------------------------------
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
 });
