@@ -6,12 +6,13 @@
     <title>Files</title>
 </head>
 <body>
-    <h1>Available Files</h1>
+    <h1>Welcome, <%= user.username %>!</h1>
+    <h2>Uploaded Files</h2>
     <ul>
-        <li><a href="/files/category/image">Images</a></li>
-        <li><a href="/files/category/document">Documents</a></li>
-        <li><a href="/files/category/video">Videos</a></li>
-        <li><a href="/files/category/music">Music</a></li>
+        <% files.forEach(file => { %>
+            <li><a href="/files/<%= file._id %>"><%= file.name %></a></li>
+        <% }) %>
     </ul>
+    <a href="/logout">Logout</a>
 </body>
 </html>
