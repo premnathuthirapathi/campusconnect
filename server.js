@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -38,8 +39,8 @@ app.use(express.json());
 // ✅ Session Configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false, 
-    saveUninitialized: false, 
+    resave: false,
+    saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 } // 1-hour session timeout
 }));
 
@@ -50,6 +51,9 @@ app.use(passport.session());
 // ✅ Set View Engine & Static Folder
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
+
+// OPTIONAL: If you want to serve uploaded files directly by URL, e.g. /uploads/<filename>
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ Home Route (Redirect if Not Authenticated)
 app.get('/', (req, res) => {
