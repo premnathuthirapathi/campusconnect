@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <form action="/files/upload" method="POST" enctype="multipart/form-data">
+        <label for="file">Upload File:</label>
+        <input type="file" name="file" required><br>
+        <button type="submit">Upload</button>
+    </form>
+    <h2>Uploaded Files</h2>
+    <ul>
+        <% files.forEach(file => { %>
+            <li><%= file.filename %> (Category: <%= file.category %>)</li>
+        <% }) %>
+    </ul>
+</body>
+</html>
