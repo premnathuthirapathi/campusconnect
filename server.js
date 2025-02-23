@@ -53,6 +53,8 @@ app.use(passport.session());
 // View Engine & Static Folder
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Home Route: Redirect to /files if authenticated, else /login
 app.get('/', (req, res) => {
