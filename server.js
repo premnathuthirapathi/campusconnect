@@ -43,5 +43,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/', require('./routes/authRoutes'));
 app.use('/files', require('./routes/fileRoutes'));
 
+// Fix for "Cannot GET /"
+app.get('/', (req, res) => {
+    res.send("Welcome to CampusConnect!");
+});
+
 // Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
