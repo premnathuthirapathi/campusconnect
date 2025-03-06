@@ -5,18 +5,27 @@
       title: pageTitle, 
       user: user,
       body: `
-  <div class="my-4">
-    <h2>${pageTitle}</h2>
-    ${files.length === 0 ? `<div class="alert alert-info">No files found for this category.</div>` : `
+  <div class="container my-4">
+    <h2 class="mb-4">${pageTitle}</h2>
+    
+    ${files.length === 0 ? `
+      <div class="alert alert-info">No files found for this category.</div>
+    ` : `
       <div class="list-group">
         ${files.map(file => `
-          <a href="/files/view/${file._id}" class="list-group-item list-group-item-action">
-            <h5>${file.title || 'Untitled'}</h5>
-            <p>${file.description || 'No description provided.'}</p>
+          <a href="/files/view/${file._id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">${file.title || 'Untitled'}</h5>
+              <p class="mb-1 text-muted">${file.description || 'No description provided.'}</p>
+            </div>
+            <span class="badge bg-primary rounded-pill">View</span>
           </a>
         `).join('')}
       </div>
     `}
-    <a href="/files" class="btn btn-secondary mt-3">Back to Dashboard</a>
+
+    <a href="/files" class="btn btn-secondary mt-4">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
   </div>
 ` }) %>
