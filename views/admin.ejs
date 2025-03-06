@@ -1,49 +1,42 @@
-<% 
-  const pageTitle = 'Admin Panel'; 
-%>
-<%- include('partials/layout', { 
-      title: pageTitle, 
-      user: user,
-      body: `
-  <div class="my-4">
+<% const pageTitle = 'Admin Panel'; %>
+<%- include('partials/layout', { title: pageTitle, user: user }) %>
+
+<div class="my-4">
     <h2>Admin Panel</h2>
+    <p>Welcome, <%= user.username %>!</p>
+
     <div class="card mb-4">
-      <div class="card-header">Upload File</div>
-      <div class="card-body">
-        <form action="/files/upload" method="POST" enctype="multipart/form-data">
-          <div class="form-group">
-            <label for="file">Upload File:</label>
-            <input type="file" name="file" id="file" class="form-control-file" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Upload</button>
-        </form>
-      </div>
+        <div class="card-header">Upload File</div>
+        <div class="card-body">
+            <form action="/files/upload" method="POST" enctype="multipart/form-data">
+                <label for="file">Upload File:</label>
+                <input type="file" name="file" id="file" class="form-control-file" required>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
     </div>
 
     <h3>Uploaded Files</h3>
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-          <tr>
-            <th>Filename</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Category</th>
-          </tr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Category</th>
+            </tr>
         </thead>
         <tbody>
-          ${files.map(file => `
-            <tr>
-              <td>${file.filename}</td>
-              <td>${file.title || 'Untitled'}</td>
-              <td>${file.description || 'No description'}</td>
-              <td>${file.category}</td>
-            </tr>
-          `).join('')}
+            <% files.forEach(file => { %>
+                <tr>
+                    <td><%= file.filename %></td>
+                    <td><%= file.title || 'Untitled' %></td>
+                    <td><%= file.description || 'No description' %></td>
+                    <td><%= file.category %></td>
+                </tr>
+            <% }) %>
         </tbody>
-      </table>
-    </div>
+    </table>
 
     <a href="/files" class="btn btn-secondary">Back to Dashboard</a>
-  </div>
-` }) %>
+</div>
