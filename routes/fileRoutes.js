@@ -42,22 +42,19 @@ const storage = multer.diskStorage({
     cb(null, uniqueName);
   }
 });
-const upload = multer({
-  storage,
-  fileFilter // Remove if you want to allow all file types
-});
+const upload = multer({ storage, fileFilter });
 
 // -------------------------------------------
 // 3. Middleware: Ensure Auth
 // -------------------------------------------
 const ensureAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) return next();
+  if (req.isAuthenticated() && req.user) return next();
   req.flash('error_msg', 'Please log in to access this page.');
   res.redirect('/login');
 };
 
 const ensureAdmin = (req, res, next) => {
-  if (req.isAuthenticated() && req.user.role === 'admin') return next();
+  if (req.isAuthenticated() && req.user && req.user.role === 'admin') return next();
   req.flash('error_msg', 'Unauthorized access.');
   res.redirect('/');
 };
@@ -109,24 +106,19 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).send('No file uploaded.');
 
-    // Log what Multer gave us
     console.log("Uploaded file info:", req.file);
 
-    // Capture title and description from form
-    const { title, description } = req.body;
-    // Auto-determine category based on title keywords
-    const category = getCategory(title);
+    const { title, description, category } = req.body;
+    const autoCategory = category || getCategory(title);
 
-    // Store file in the database
     const newFile = await File.create({
       filename: req.file.filename,
-      category,
+      category: autoCategory,
       title,
       description
     });
 
     console.log("File record created in DB:", newFile);
-
     res.redirect('/files/admin');
   } catch (err) {
     console.error('Error uploading file:', err);
@@ -145,30 +137,14 @@ router.get('/view/:id', ensureAuthenticated, async (req, res) => {
     const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
     console.log("Trying to read file at:", filePath);
 
-    // Check if file exists
     if (!fs.existsSync(filePath)) {
       console.error("File does not exist on disk:", filePath);
       return res.status(404).send('File not found on disk.');
     }
 
     const ext = path.extname(fileRecord.filename).toLowerCase();
-    switch (ext) {
-      case '.pdf':
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${fileRecord.filename}"`);
-        break;
-      case '.jpg':
-      case '.jpeg':
-      case '.png':
-      case '.gif':
-        res.setHeader('Content-Type', `image/${ext.slice(1)}`);
-        res.setHeader('Content-Disposition', `inline; filename="${fileRecord.filename}"`);
-        break;
-      default:
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileRecord.filename}"`);
-        break;
-    }
+    res.setHeader('Content-Type', ext === '.pdf' ? 'application/pdf' : `image/${ext.slice(1)}`);
+    res.setHeader('Content-Disposition', `inline; filename="${fileRecord.filename}"`);
 
     fs.createReadStream(filePath).pipe(res);
   } catch (err) {
@@ -188,7 +164,6 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
     const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
     console.log("Trying to download file at:", filePath);
 
-    // Check if file exists
     if (!fs.existsSync(filePath)) {
       console.error("File does not exist on disk:", filePath);
       return res.status(404).send('File not found on disk.');
@@ -213,16 +188,14 @@ router.delete('/:id', ensureAdmin, async (req, res) => {
 
     const filePath = path.join(__dirname, '..', 'uploads', fileRecord.filename);
 
-    // Remove file from disk
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    // Remove file record from DB
     await File.findByIdAndDelete(req.params.id);
     console.log(`Deleted file: ${filePath}`);
 
-    res.status(200).send('File deleted successfully.');
+    res.status(200).json({ message: 'File deleted successfully.' });
   } catch (err) {
     console.error('Error deleting file:', err);
     res.status(500).send('Internal Server Error');
