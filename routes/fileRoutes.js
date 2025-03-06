@@ -30,7 +30,7 @@ const ensureAdmin = (req, res, next) => {
     res.redirect('/');
 };
 
-// User Dashboard - Show Categories
+// 🏠 User Dashboard - Show Categories
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         const categories = await File.distinct('category');
@@ -41,7 +41,21 @@ router.get('/', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// Admin Panel - Show Uploaded Files
+// 📂 Show Files in a Specific Category
+router.get('/category/:category', ensureAuthenticated, async (req, res) => {
+    try {
+        const files = await File.find({ category: req.params.category });
+        if (files.length === 0) {
+            return res.status(404).send("No files found in this category.");
+        }
+        res.render('categoryFiles', { user: req.user, category: req.params.category, files });
+    } catch (error) {
+        console.error("Error fetching category files:", error);
+        res.status(500).send("Server error.");
+    }
+});
+
+// 🔧 Admin Panel - Show Uploaded Files
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
         const files = await File.find();
@@ -52,7 +66,7 @@ router.get('/admin', ensureAdmin, async (req, res) => {
     }
 });
 
-// File Upload (Admin Only)
+// 📤 File Upload (Admin Only)
 router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
     try {
         const { title, description } = req.body;
@@ -88,7 +102,7 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
     }
 });
 
-// File Download Route
+// 📥 File Download Route
 router.get('/download/:id', ensureAuthenticated, async (req, res) => {
     try {
         const file = await File.findById(req.params.id);
@@ -97,6 +111,10 @@ router.get('/download/:id', ensureAuthenticated, async (req, res) => {
         }
 
         const filePath = path.join(__dirname, '../uploads/', file.filename);
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).send("File does not exist.");
+        }
+
         res.download(filePath);
     } catch (error) {
         console.error("File download error:", error);
@@ -104,7 +122,7 @@ router.get('/download/:id', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// File Delete Route (Admin Only)
+// ❌ File Delete Route (Admin Only)
 router.post('/delete/:id', ensureAdmin, async (req, res) => {
     try {
         const file = await File.findById(req.params.id);
@@ -112,11 +130,13 @@ router.post('/delete/:id', ensureAdmin, async (req, res) => {
             return res.status(404).send("File not found.");
         }
 
-        // Delete file from storage
+        // Delete file from storage (check existence first)
         const filePath = path.join(__dirname, '../uploads/', file.filename);
-        fs.unlink(filePath, (err) => {
-            if (err) console.error("File deletion error:", err);
-        });
+        if (fs.existsSync(filePath)) {
+            fs.unlink(filePath, (err) => {
+                if (err) console.error("File deletion error:", err);
+            });
+        }
 
         // Remove file record from database
         await File.findByIdAndDelete(req.params.id);
