@@ -5,7 +5,7 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// ✅ Signup Route
+// Signup Route
 router.get('/signup', (req, res) => {
     res.render('signup');
 });
@@ -13,7 +13,6 @@ router.get('/signup', (req, res) => {
 router.post('/signup', async (req, res) => {
     const { username, email, password, role } = req.body;
 
-    // ✅ Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, email, password: hashedPassword, role });
 
@@ -21,24 +20,22 @@ router.post('/signup', async (req, res) => {
     res.redirect('/login');
 });
 
-// ✅ Login Route
+// Login Route
 router.get('/login', (req, res) => {
     res.render('login');
 });
 
-router.post('/login', (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
-        if (err) return next(err);
-        if (!user) return res.redirect('/login');
-
-        req.logIn(user, (err) => {
-            if (err) return next(err);
-            return res.redirect('/files');
-        });
-    })(req, res, next);
+router.post('/login', passport.authenticate('local', {
+    failureRedirect: '/login',
+    failureFlash: true
+}), (req, res) => {
+    if (req.user.role === 'admin') {
+        return res.redirect('/files/admin');
+    }
+    res.redirect('/files');
 });
 
-// ✅ Logout Route
+// Logout Route
 router.get('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
