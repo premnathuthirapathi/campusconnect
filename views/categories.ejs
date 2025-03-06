@@ -1,1 +1,17 @@
+<%- include('partials/layout', { title: 'Categories', user: user }) %>
+
+<div class="container">
+  <h2 class="mt-4">Select a Category</h2>
+  <div class="list-group mt-3">
+    <% if (categories.length === 0) { %>
+      <p>No categories available.</p>
+    <% } else { %>
+      <% categories.forEach(category => { %>
+        <a href="/files/category/<%= category %>" class="list-group-item list-group-item-action">
+          <%= category %>
+        </a>
+      <% }); %>
+    <% } %>
+  </div>
+</div>
 
