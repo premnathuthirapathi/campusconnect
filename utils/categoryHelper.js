@@ -12,7 +12,7 @@ const categories = {
   "Examination": [
     "exam schedule", "results", "hall ticket", "internal assessment",
     "revaluation", "marks", "exam fee", "question paper", "model exam",
-    "exam pattern", "practical exam", "exam center", "exam rules", "Time table"
+    "exam pattern", "practical exam", "exam center", "exam rules", "Time table", "Viva"
   ],
   "Placement": [
     "interview", "recruitment", "company visit", "internship", "job fair",
