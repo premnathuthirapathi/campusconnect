@@ -1,9 +1,5 @@
 // utils/categoryHelper.js
 const categories = {
-  "Technology": ["tech", "software", "computer", "ai"],
-  "Business": ["finance", "business", "startup", "investment"],
-  "Health": ["medicine", "health", "fitness", "doctor"],
-  "Education": ["school", "college", "university", "learning"],
 "Events": [
     "seminar", "workshop", "cultural", "guest lecture", "tech fest",
     "conference", "webinar", "celebration", "event schedule", "annual day"
