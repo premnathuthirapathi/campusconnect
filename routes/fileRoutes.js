@@ -73,10 +73,37 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
 
         // Auto-assign category based on title keywords
         const categories = {
-            "Technology": ["tech", "software", "computer", "ai"],
-            "Business": ["finance", "business", "startup", "investment"],
-            "Health": ["medicine", "health", "fitness", "doctor"],
-            "Education": ["school", "college", "university", "learning"]
+            "Events": [
+                "seminar", "workshop", "cultural", "guest lecture", "tech fest",
+    "conference", "webinar", "celebration", "event schedule", "annual day"
+  ],
+"Academic": [
+    "syllabus", "assignments", "curriculum", "class schedule",
+    "study material", "lesson plan", "attendance", "academic calendar",
+    "faculty schedule", "notes", "online class", "course registration"
+  ],
+  "Examination": [
+    "exam schedule", "results", "hall ticket", "internal assessment",
+    "revaluation", "marks", "exam fee", "question paper", "model exam",
+    "exam pattern", "practical exam", "exam center", "exam rules", "Time table", "Viva"
+  ],
+  "Placement": [
+    "interview", "recruitment", "company visit", "internship", "job fair",
+    "offer letter", "HR talk", "campus drive", "resume submission",
+    "aptitude test", "placement training", "pre-placement talk",
+    "mock interview", "skill test"
+  ],
+  "Department Circulars": [
+    "dept notice", "internal meeting", "lab schedule", "faculty announcement",
+    "project submission", "department update", "work allocation",
+    "internal circular", "faculty meeting", "lab maintenance",
+    "department rules", "committee meeting", "project review"
+  ],
+  "CELLS": [
+    "NSS", "NCC", "IQAC", "Research Cell", "Entrepreneurship Cell",
+    "Innovation Cell", "Grievance Cell", "Anti-ragging Cell", "Alumni Cell",
+    "Women's Cell", "Eco Club", "Social Responsibility", "Student Council"
+  ]
         };
 
         let selectedCategory = "Others";
