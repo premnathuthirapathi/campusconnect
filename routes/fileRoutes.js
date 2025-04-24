@@ -106,7 +106,7 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
   ]
         };
 
-        let selectedCategory = "Others";
+        let selectedCategory = "General";
         const titleLower = title ? title.toLowerCase() : "";
         for (const [category, keywords] of Object.entries(categories)) {
             if (keywords.some(keyword => titleLower.includes(keyword))) {
