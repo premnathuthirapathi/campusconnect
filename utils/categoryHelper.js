@@ -34,7 +34,7 @@ const categories = {
 };
 
 function getCategory(title) {
-  if (!title) return "Others"; // Default if no title provided
+  if (!title) return "General"; // Default if no title provided
 
   title = title.toLowerCase();
   for (const [category, keywords] of Object.entries(categories)) {
@@ -42,7 +42,7 @@ function getCategory(title) {
       return category;
     }
   }
-  return "Others"; // Return Others if no keywords match
+  return "General"; // Return Others if no keywords match
 }
 
 module.exports = { getCategory };
