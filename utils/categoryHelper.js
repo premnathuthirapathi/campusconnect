@@ -31,7 +31,7 @@ const categories = {
     "Innovation Cell", "Grievance Cell", "Anti-ragging Cell", "Alumni Cell",
     "Women's Cell", "Eco Club", "Social Responsibility", "Student Council"
   ]
-     "HoD Meeting": [
+     "Hod Meeting": [
     "hod meeting",
     "departmental meeting",
     "faculty discussion",
