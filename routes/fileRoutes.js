@@ -104,6 +104,51 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
     "Innovation Cell", "Grievance Cell", "Anti-ragging Cell", "Alumni Cell",
     "Women's Cell", "Eco Club", "Social Responsibility", "Student Council"
   ]
+     "HoD Meeting": [
+    "hod meeting",
+    "departmental meeting",
+    "faculty discussion",
+    "academic heads",
+    "meeting schedule",
+    "administrative updates",
+    "department coordination"
+  ],
+  "CCM": [
+    "class committee",
+    "ccm meeting",
+    "student-faculty discussion",
+    "semester feedback",
+    "academic review",
+    "internal assessment review",
+    "course improvement"
+  ],
+  "Exam Fees": [
+    "exam fees",
+    "fee payment",
+    "exam fee notification",
+    "academic fees",
+    "examination charges",
+    "semester fees",
+    "payment due"
+  ],
+  "Leave Details": [
+    "leave application",
+    "student leave",
+    "faculty leave",
+    "leave approval",
+    "absent report",
+    "leave policy",
+    "attendance record"
+  ],
+  "IAE Schedule": [
+    "iae schedule",
+    "internal exam",
+    "assessment timetable",
+    "test schedule",
+    "midterm exam",
+    "academic test",
+    "semester test"
+  ]
         };
 
         let selectedCategory = "General";
