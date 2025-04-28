@@ -97,7 +97,7 @@ router.post('/upload', ensureAdmin, upload.single('file'), async (req, res) => {
     "dept notice", "internal meeting", "lab schedule", "faculty announcement",
     "project submission", "department update", "work allocation",
     "internal circular", "faculty meeting", "lab maintenance",
-    "department rules", "committee meeting", "project review"
+    "department rules", "committee meeting", "project review", "project discussion"
   ],
   "CELLS": [
     "NSS", "NCC", "IQAC", "Research Cell", "Entrepreneurship Cell",
