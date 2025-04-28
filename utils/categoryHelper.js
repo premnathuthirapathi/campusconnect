@@ -30,7 +30,7 @@ const categories = {
     "NSS", "NCC", "IQAC", "Research Cell", "Entrepreneurship Cell",
     "Innovation Cell", "Grievance Cell", "Anti-ragging Cell", "Alumni Cell",
     "Women's Cell", "Eco Club", "Social Responsibility", "Student Council"
-  ]
+  ],
   "Hod Meeting": [
     "hod meeting",
     "departmental meeting",
